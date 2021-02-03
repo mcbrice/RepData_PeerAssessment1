@@ -8,23 +8,45 @@ output:
 
 ## Loading and preprocessing the data
 Load needed libraries
-``` {r}
+
+```r
 library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+```
+
+```
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+```
+
+```r
 library(ggplot2)
 ```
 
 1. Load the data  
 
 Read the data from the zip file
-``` {r}
-activity <- read.csv(unz("activity.zip", "activity.csv"))
 
+```r
+activity <- read.csv(unz("activity.zip", "activity.csv"))
 ```
 
 2. Process/transform the data (if necessary) into a format suitable for your analysis  
 
 convert date strings to date objects
-``` {r}
+
+```r
 activity$date <- strptime(activity$date, "%Y-%m-%d")
 ```
 
@@ -32,12 +54,14 @@ activity$date <- strptime(activity$date, "%Y-%m-%d")
 1. Calculate the total number of steps taken per day  
 
 Ignore NA values
-``` {r}
+
+```r
 totalDay <- activity %>% group_by(date) %>% summarise(sum = sum(steps, na.rm = TRUE))
 ```
 
 2. Make a histogram of the total number of steps taken each day
-``` {r}
+
+```r
 ggplot(totalDay, aes(x = sum)) +
   geom_histogram(bins = 10) + 
   labs(title = "Steps Per Day",
@@ -45,22 +69,34 @@ ggplot(totalDay, aes(x = sum)) +
        y = "Frequency")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
+
 3. Calculate and report the mean and median of the total number of steps taken per day  
 
 Mean
-``` {r}
+
+```r
 cat("Mean:", mean(totalDay$sum, na.rm = TRUE))
 ```
-Median
-``` {r}
 
+```
+## Mean: 9354.23
+```
+Median
+
+```r
 cat("Median:", median(totalDay$sum, na.rm = TRUE))
+```
+
+```
+## Median: 10395
 ```
 
 ## What is the average daily activity pattern?
 1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and 
 the average number of steps taken, averaged across all days (y-axis)
-``` {r}
+
+```r
 intervalAvg <- activity %>% group_by(interval) %>% summarise(mean = mean(steps, na.rm = TRUE))
 plot(x = intervalAvg$interval,
      y = intervalAvg$mean,
@@ -70,17 +106,29 @@ plot(x = intervalAvg$interval,
      main = "Average number of steps taken for each interval")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
+
 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
-``` {r}
+
+```r
 max <- intervalAvg$interval[which.max(intervalAvg$mean)]
 cat("Max interval:", max)
+```
+
+```
+## Max interval: 835
 ```
 
 ## Imputing missing values
 1. Calculate and report the total number of missing values in the dataset (i.e. the total 
 number of rows with NAs
-``` {r}
+
+```r
 sum(is.na(activity))
+```
+
+```
+## [1] 2304
 ```
 
 2. Devise a strategy for filling in all of the missing values in the dataset. The strategy does 
@@ -92,7 +140,8 @@ Replace NAs with mean of that 5 minute interval.
 3. Create a new dataset that is equal to the original dataset but with the missing data filled in.  
 
 Create new dataset using previously calculated interval means to fill in NA values.
-``` {r}
+
+```r
 activity2 <- activity
 for (i in 1:nrow(activity2)) {
   if (is.na(activity2[i,'steps'])) {
@@ -104,7 +153,8 @@ for (i in 1:nrow(activity2)) {
 4. Make a histogram of the total number of steps taken each day and Calculate and report the mean and median total number of steps taken per day. Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?  
 
 Calculate and create histogram for total steps per day.
-``` {r}
+
+```r
 totalDay2 <- activity2 %>% group_by(date) %>% summarise(sum = sum(steps))
 ggplot(totalDay2, aes(x = sum)) +
   geom_histogram(bins = 10) + 
@@ -113,10 +163,24 @@ ggplot(totalDay2, aes(x = sum)) +
        y = "Frequency")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+
 Calculate and report mean and median.
-``` {r}
+
+```r
 cat("Mean:", mean(totalDay2$sum))
+```
+
+```
+## Mean: 10766.19
+```
+
+```r
 cat("Median:", median(totalDay2$sum))
+```
+
+```
+## Median: 10766.19
 ```
 
 Imputing missing data has a noticeable impact on our estimates. The shape of the histogram as well
@@ -128,7 +192,8 @@ cause different results.
 indicating whether a given date is a weekday or weekend day.  
 
 Create weekday and weekend variables based on day of week.
-``` {r}
+
+```r
 activity2$day <- ifelse(weekdays(activity2$date) == "Saturday" | 
                           weekdays(activity2$date) == "Sunday",
                         "weekend",
@@ -141,12 +206,18 @@ the README file in the GitHub repository to see an example of what this plot sho
 simulated data.  
 
 Calculate mean per interval and weekday/weekend
-``` {r}
+
+```r
 intervalDay <- activity2 %>% group_by(interval, day) %>% summarise(mean = mean(steps))
 ```
 
+```
+## `summarise()` has grouped output by 'interval'. You can override using the `.groups` argument.
+```
+
 Plot
-``` {r}
+
+```r
 ggplot(intervalDay, aes(interval, mean)) + 
   geom_line() + 
   facet_grid(day ~ .) + 
@@ -154,3 +225,5 @@ ggplot(intervalDay, aes(interval, mean)) +
        x = "Interval",
        y = "Steps")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
